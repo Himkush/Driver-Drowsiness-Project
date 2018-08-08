@@ -15,6 +15,7 @@ import time
 import dlib
 import cv2
 import sms
+import os
 
 def sound_alarm(path):
     # play an alarm sound
@@ -46,6 +47,8 @@ ap.add_argument("-a", "--alarm", type=str, default="",
     help="path alarm .WAV file")
 ap.add_argument("-w", "--webcam", type=int, default=0,
     help="index of webcam on system")
+ap.add_argument("-o", "--output", required=True,
+	help="path to output directory")
 args = vars(ap.parse_args())
  
 # define two constants, one for the eye aspect ratio to indicate
@@ -53,7 +56,7 @@ args = vars(ap.parse_args())
 # frames the eye must be below the threshold for to set off the
 # alarm
 EYE_AR_THRESH = 0.3
-EYE_AR_CONSEC_FRAMES = 50
+EYE_AR_CONSEC_FRAMES = 75
 
 SMS_SEND = False
 
@@ -62,6 +65,7 @@ SMS_SEND = False
 COUNTER = 0
 ALARM_ON = False
 
+total = 0
 # initialize dlib's face detector (HOG-based) and then create
 # the facial landmark predictor
 print("[INFO] loading facial landmark predictor...")
@@ -87,6 +91,7 @@ while True:
     # channels)
     frame = vs.read()
     frame = imutils.resize(frame, width=700)
+    orig = frame.copy()
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
     # detect faces in the grayscale frame
@@ -126,6 +131,9 @@ while True:
             # then sound the alarm
             if COUNTER >= EYE_AR_CONSEC_FRAMES:
                 # if the alarm is not on, turn it on
+                p = os.path.sep.join([args["output"], "{}.png".format(str(total).zfill(5))])
+                cv2.imwrite(p, orig)
+                total += 1
                 if not ALARM_ON:
                     ALARM_ON = True
 
@@ -157,10 +165,15 @@ while True:
         # thresholds and frame counters
         cv2.putText(frame, "EAR: {:.2f}".format(ear), (300, 30),
             cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
- 
+    
     # show the frame
     cv2.imshow("Frame", frame)
     key = cv2.waitKey(1) & 0xFF
+    
+##    if key == ord("k"):
+##        p = os.path.sep.join([args["output"], "{}.png".format(str(total).zfill(5))])
+##        cv2.imwrite(p, orig)
+##        total += 1
  
     # if the `q` key was pressed, break from the loop
     if key == ord("q"):
