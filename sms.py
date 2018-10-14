@@ -7,7 +7,7 @@ string1 =  ctime()
 host = "smtp.gmail.com"
 port = 587
 username = "codebreakerraj@gmail.com"
-password = "rajan.08"
+password = ""
 from_email = username
 to_list = ["himkushwaha08@gmail.com", "kushhim@outlook.com"]
 
